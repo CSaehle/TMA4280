@@ -1,5 +1,5 @@
 /*
-  C-program to solve the two-dimensional Poisson equation on 
+  C-program to solve the two-dimensional Poisson equation on
   a unit square using one-dimensional eigenvalue decompositions
   and fast sine transforms
 
@@ -43,7 +43,7 @@ main(int argc, char **argv)
   if (argc < 2) {
     if (mpi_rank == 0){
       printf("need a problem size\n");
-    } 
+    }
     goto end;
   }
 
@@ -63,55 +63,66 @@ main(int argc, char **argv)
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
 
+  #pragma omp parallel for
   for (i=0; i < m; i++) { // Everyone generate this one
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
+
+  #pragma omp parallel for
   for (j=0; j < m; j++) { // MPI
     for (i=0; i < m; i++) { // OMP
       b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
     }
   }
+
+  #pragma omp parallel for
   for (j=0; j < m; j++) { // MPI cut + OMP
     fst_(b[j], &n, z, &nn);
   }
 
   transpose (bt,b,m);
 
+  #pragma omp parallel for
   for (i=0; i < m; i++) { // MPI cut + OMP
     fstinv_(bt[i], &n, z, &nn);
   }
-  
+
+  #pragma omp parallel for
   for (j=0; j < m; j++) { // MPI
-    for (i=0; i < m; i++) { // OMP
+    for (i=0; i < m; i++) {
       bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
     }
   }
-  
+
+  #pragma omp parallel for
   for (i=0; i < m; i++) { // MPI cut + OMP
     fst_(bt[i], &n, z, &nn);
   }
 
   transpose (b,bt,m);
 
+  #pragma omp parallel for
   for (j=0; j < m; j++) { // MPI cut + OMP
     fstinv_(b[j], &n, z, &nn);
   }
 
   local_max = 0.0;
   // MPI, work in range (and handle last node overflow)
+  #pragma omp parallel for
+  // OMP - done here to avoid thread startup/shutdowns and cache misses
   for (j=mpi_rank * mpi_work; j < (mpi_rank + 1) * mpi_work && j < m; j++) {
-    for (i=0; i < m; i++) { // OMP
+    for (i=0; i < m; i++) {
       if (b[j][i] > local_max) local_max = b[j][i];
     }
   }
 
   MPI_Reduce(&local_max, &global_max, 1,
              MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-  
+
   if (mpi_rank == 0) {
     printf (" umax = %e \n", global_max);
   }
- end: 
+ end:
   MPI_Finalize();
 }
 
