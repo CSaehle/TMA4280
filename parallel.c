@@ -59,43 +59,43 @@ main(int argc, char **argv)
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
 
-  for (i=0; i < m; i++) {
+  for (i=0; i < m; i++) { // Everyone generate this one
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
-  for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
-      b[j][i] = h*h;
+  for (j=0; j < m; j++) { // MPI
+    for (i=0; i < m; i++) { // OMP
+      b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
     }
   }
-  for (j=0; j < m; j++) {
+  for (j=0; j < m; j++) { // MPI cut + OMP
     fst_(b[j], &n, z, &nn);
   }
 
   transpose (bt,b,m);
 
-  for (i=0; i < m; i++) {
+  for (i=0; i < m; i++) { // MPI cut + OMP
     fstinv_(bt[i], &n, z, &nn);
   }
   
-  for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
+  for (j=0; j < m; j++) { // MPI
+    for (i=0; i < m; i++) { // OMP
       bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
     }
   }
   
-  for (i=0; i < m; i++) {
+  for (i=0; i < m; i++) { // MPI cut + OMP
     fst_(bt[i], &n, z, &nn);
   }
 
   transpose (b,bt,m);
 
-  for (j=0; j < m; j++) {
+  for (j=0; j < m; j++) { // MPI cut + OMP
     fstinv_(b[j], &n, z, &nn);
   }
 
   umax = 0.0;
-  for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
+  for (j=0; j < m; j++) { // MPI
+    for (i=0; i < m; i++) { // OMP
       if (b[j][i] > umax) umax = b[j][i];
     }
   }
