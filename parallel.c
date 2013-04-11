@@ -28,7 +28,7 @@ void fstinv_(Real *v, int *n, Real *w, int *nn);
 main(int argc, char **argv)
 {
   Real *diag, **b, **bt, *z;
-  Real pi, h, local_max, global_max;
+  Real pi, h, omp_local_max, local_max, global_max;
   int i, j, n, m, nn;
   int mpi_size, mpi_rank, mpi_work;
 
@@ -107,12 +107,22 @@ main(int argc, char **argv)
   }
 
   local_max = 0.0;
-  // MPI, work in range (and handle last node overflow)
-  #pragma omp parallel for
-  // OMP - done here to avoid thread startup/shutdowns and cache misses
-  for (j=mpi_rank * mpi_work; j < (mpi_rank + 1) * mpi_work && j < m; j++) {
-    for (i=0; i < m; i++) {
-      if (b[j][i] > local_max) local_max = b[j][i];
+  omp_local_max = 0.0;
+
+  #pragma omp parallel shared(local_max) private(i)  firstprivate(omp_local_max)
+  {
+    // MPI, work in range (and handle last node overflow)
+    #pragma omp for nowait
+    for (j=mpi_rank * mpi_work; j < (mpi_rank + 1) * mpi_work && j < m; j++) {
+      for (i=0; i < m; i++) {
+        if (b[j][i] > local_max) local_max = b[j][i];
+      }
+    }
+    #pragma omp critical
+    {
+      if (omp_local_max > local_max) {
+        local_max = omp_local_max;
+      }
     }
   }
 
