@@ -28,20 +28,20 @@ void fstinv_(Real *v, int *n, Real *w, int *nn);
 main(int argc, char **argv)
 {
   Real *diag, **b, **bt, *z;
-  Real pi, h, umax;
+  Real pi, h, local_max, global_max;
   int i, j, n, m, nn;
-  int size, rank;
+  int mpi_size, mpi_rank, mpi_work;
 
   MPI_Init(&argc, &argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
   /* this version requires n to be a power of 2 */
 
   if (argc < 2) {
-    if (rank == 0){
+    if (mpi_rank == 0){
       printf("need a problem size\n");
     } 
     goto end;
@@ -49,6 +49,10 @@ main(int argc, char **argv)
 
   n  = atoi(argv[1]);
   m  = n-1;
+  // mpi_work is the amount of work needed to be done by each mpi node. The last
+  // mpi node may do slightly less work than the others, but that's the closest
+  // we'll get to proper load balancing.
+  mpi_work = 1 + ((m - 1) / mpi_size);
   nn = 4*n;
 
   diag = createRealArray (m);
@@ -93,15 +97,19 @@ main(int argc, char **argv)
     fstinv_(b[j], &n, z, &nn);
   }
 
-  umax = 0.0;
-  for (j=0; j < m; j++) { // MPI
+  local_max = 0.0;
+  // MPI, work in range (and handle last node overflow)
+  for (j=mpi_rank * mpi_work; j < (mpi_rank + 1) * mpi_work && j < m; j++) {
     for (i=0; i < m; i++) { // OMP
-      if (b[j][i] > umax) umax = b[j][i];
+      if (b[j][i] > local_max) local_max = b[j][i];
     }
   }
+
+  MPI_Reduce(&local_max, &global_max, 1,
+             MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
   
-  if (rank == 0) {
-    printf (" umax = %e \n",umax);
+  if (mpi_rank == 0) {
+    printf (" umax = %e \n", global_max);
   }
  end: 
   MPI_Finalize();
