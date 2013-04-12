@@ -14,14 +14,14 @@ MPI_Datatype send_t, recv_t;
 #define RPN 2
 // Rows per node
 
-int **create2DArray(int m, int n) {
+int **create2DArray(int rows, int cols) {
   int i, total;
-  total = m * n;
+  total = rows * cols;
   int **a;
-  a =    (int **) malloc(m * sizeof(int *));
+  a =    (int **) malloc(rows * sizeof(int *));
   a[0] = (int *) malloc(total *sizeof(int));
-  for (i=1; i < n; i++) {
-    a[i] = a[i-1] + n;
+  for (i=1; i < rows; i++) {
+    a[i] = a[i-1] + cols;
   }
   memset(a[0], 0, total*sizeof(int));
   return a;
@@ -63,12 +63,14 @@ main(int argc, char **argv )
   }
   
   
-  int **send = create2DArray(ROWS, COLS);
-  int **recv = create2DArray(ROWS, COLS);
-  int i;
+  int **send = create2DArray(RPN, RPN*RPN);
+  int **recv = create2DArray(RPN, RPN*RPN);
+  int i, j;
 
-  for (i = 0; i < RPN*COLS; i++) {
-    send[0][i] = i + RPN*COLS * mpi_rank;
+  for (i = 0; i < RPN; i++) {
+    for (j = 0; j < COLS; j++) {
+      send[i][j] = i*COLS + j  + RPN*COLS* mpi_rank;
+    }
   }
 
   if (mpi_rank == 0) {
@@ -83,7 +85,6 @@ main(int argc, char **argv )
   for (i = 0; i < RPN; i++) {
     transpose(recv, RPN, i*RPN);    
   }
-
   
   if (mpi_rank == 0) {
     for (i = 0; i < RPN; i++) {
