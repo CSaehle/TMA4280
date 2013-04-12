@@ -8,10 +8,10 @@
 
 MPI_Datatype send_t, recv_t;
 
-#define ROWS 4
-#define COLS 4
+#define ROWS 5
+#define COLS 5
 #define NODES 2
-#define RPN 2
+#define RPN 3
 // Rows per node
 
 int **create2DArray(int rows, int cols) {
@@ -73,20 +73,33 @@ main(int argc, char **argv )
     }
   }
 
-  if (mpi_rank == 0) {
+  if (mpi_rank == 1) {
     for (i = 0; i < RPN; i++) {
       prn(send[i], COLS);
     }
   }
+
+  int *sendcounts = (int *) malloc(NODES * sizeof(int));
+  int *sdispls = (int *) malloc(NODES * sizeof(int));
+  int *recvcounts = (int *) malloc(NODES * sizeof(int));
+  int *rdispls = (int *) malloc(NODES * sizeof(int));
+
+  for (i = 0; i < NODES; i++) {
+    sendcounts[i] = RPN;
+    sdispls[i] = i * RPN;
+    recvcounts[i] = RPN;
+    rdispls[i] = i * RPN;
+  }
   
   for (i = 0; i < RPN; i++) {
-    MPI_Alltoall(send[i], RPN, MPI_INT, recv[i], RPN, MPI_INT, MPI_COMM_WORLD);
+    MPI_Alltoallv(send[i], sendcounts, sdispls, MPI_INT,
+                  recv[i], recvcounts, rdispls, MPI_INT, MPI_COMM_WORLD);
   }
   for (i = 0; i < RPN; i++) {
     transpose(recv, RPN, i*RPN);    
   }
   
-  if (mpi_rank == 0) {
+  if (mpi_rank == 1) {
     for (i = 0; i < RPN; i++) {
       prn(recv[i], COLS);
     }
