@@ -14,27 +14,8 @@ MPI_Datatype send_t, recv_t;
 #define RPN 3
 // Rows per node
 
-int **create2DArray(int rows, int cols) {
-  int i, total;
-  total = rows * cols;
-  int **a;
-  a =    (int **) malloc(rows * sizeof(int *));
-  a[0] = (int *) malloc(total *sizeof(int));
-  for (i=1; i < rows; i++) {
-    a[i] = a[i-1] + cols;
-  }
-  memset(a[0], 0, total*sizeof(int));
-  return a;
-}
-
-void prn(int *a, int size) {
-  printf("[");
-  int i;
-  for (i = 0; i < size; i++) {
-    printf("%d, ", a[i]);
-  }
-  printf("]\n");
-}
+void prn(int *a, int size);
+int **create2DArray(int rows, int cols);
 
 void transpose (int **b, int rpn, int off) {
   int i, j, temp;
@@ -114,4 +95,26 @@ main(int argc, char **argv )
   }
  end:
   MPI_Finalize();
+}
+
+int **create2DArray(int rows, int cols) {
+  int i, total;
+  total = rows * cols;
+  int **a;
+  a =    (int **) malloc(rows * sizeof(int *));
+  a[0] = (int *) malloc(total *sizeof(int));
+  for (i=1; i < rows; i++) {
+    a[i] = a[i-1] + cols;
+  }
+  memset(a[0], 0, total*sizeof(int));
+  return a;
+}
+
+void prn(int *a, int size) {
+  printf("[");
+  int i;
+  for (i = 0; i < size; i++) {
+    printf("%d, ", a[i]);
+  }
+  printf("]\n");
 }
