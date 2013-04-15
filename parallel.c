@@ -24,6 +24,11 @@ void transpose (Real **bt, Real **b, int m);
 void fst_(Real *v, int *n, Real *w, int *nn);
 void fstinv_(Real *v, int *n, Real *w, int *nn);
 
+#define DEBUGF(...) do {                            \
+  if (mpi_rank == 0) {                              \
+      printf(__VA_ARGS__);                          \
+    }                                               \
+  } while (0)
 
 main(int argc, char **argv)
 {
