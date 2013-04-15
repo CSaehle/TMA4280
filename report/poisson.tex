@@ -107,4 +107,24 @@ $\mathcal{O}(n^2)$ time.
 
 Finding the original $\underline U$ is trivial by using Equation 13, which uses
 $\mathcal{O}(n^3)$ time. When this calculation is done, we have thus solved the
-Poisson problem.
+Poisson problem in $\mathcal{O}(n^3)$ time.
+
+\subsection{Improvements}
+
+The implementation used in this exercise runs in $\mathcal{O}(n^2\log (n))$,
+which is faster than the $\mathcal{O}(n^3)$ solution described above. To avoid
+repeatability, a good explanation on how this solution works is explained in
+great detail in ``{\em The Poisson Problem in $\mathbb{R}^2$: Fast
+  Diagonalization Methods}'' (Einar M. Rønquist, 2011) and the reader is
+encouraged to read this paper.
+
+A very brief explanation of this implementation is that we look at how the
+matrix multiplication is done. A matrix multiplication $\underline A \times
+\underline B$ can be interpreted as a matrix $\underline A$ multiplied with $n$
+vectors $\underline b_i$, which has the complexity $\mathcal{O}(n~n^2)$.
+However, for each matrix multiplication $\underline A \underline b_i$, we can,
+by using some assumptions, use the discrete sine transform to perform the
+multiplication. As a discrete sine transform is using $\mathcal{O}(n \log (n))$
+time, the total time is thus $\mathcal{O}(n^2\log (n))$ instead of the original
+$\mathcal{O}(n^3)$.
+
