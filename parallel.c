@@ -37,6 +37,7 @@ int n, m, nn;
 
 main(int argc, char **argv)
 {
+  double wall_start = MPI_Wtime();
   Real *diag, **b, **bt, **z;
   Real pi, h, omp_local_max, local_max, global_max;
   int i, j, omp_id;
@@ -55,7 +56,8 @@ main(int argc, char **argv)
     if (mpi_rank == 0){
       printf("need a problem size\n");
     }
-    goto end;
+    MPI_Finalize();
+    return;
   }
 
   n  = atoi(argv[1]);
@@ -143,11 +145,7 @@ main(int argc, char **argv)
 
   MPI_Reduce(&local_max, &global_max, 1,
              MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-
-  if (mpi_rank == 0) {
-    printf (" umax = %e \n", global_max);
-  }
- end:
+               
   free(diag);
   free(b[0]);
   free(b);
@@ -156,6 +154,12 @@ main(int argc, char **argv)
   free(z[0]);
   free(z);
   MPI_Finalize();
+  
+  double wall_end = MPI_Wtime();
+
+  if (mpi_rank == 0) {
+    printf (" umax = %e, time = %.3fs \n", global_max,wall_end-wall_start);
+  }
 }
 
 void local_transpose (Real **b, int off) {
