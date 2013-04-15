@@ -1,7 +1,0 @@
-mpirun: killing job...
-
---------------------------------------------------------------------------
-mpirun noticed that process rank 0 with PID 3794 on node compute-0-14.local exited on signal 0 (Unknown signal 0).
---------------------------------------------------------------------------
-mpirun: clean termination accomplished
-

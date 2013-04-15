@@ -1,2 +1,2 @@
  umax = 7.367135e-02, time = 788.949s 
- mpi_size = 1, omp_max_threads = 1
+ mpi_size = 1, omp_max_threads = 1, n = 16384
