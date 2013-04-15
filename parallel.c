@@ -95,7 +95,7 @@ main(int argc, char **argv)
   #pragma omp parallel for
   for (j=0; j < m; j++) { // MPI
     for (i=0; i < m; i++) {
-      bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
+      bt[j][i] = bt[j][i]/(diag[i]+diag[j/* + offset*/]);
     }
   }
 
@@ -120,7 +120,7 @@ main(int argc, char **argv)
     #pragma omp for nowait
     for (j=mpi_rank * mpi_work; j < (mpi_rank + 1) * mpi_work && j < m; j++) {
       for (i=0; i < m; i++) {
-        if (b[j][i] > local_max) local_max = b[j][i];
+        if (b[j][i] > omp_local_max) omp_local_max = b[j][i];
       }
     }
     #pragma omp critical
