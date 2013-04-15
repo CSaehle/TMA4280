@@ -4,10 +4,10 @@
 #PBS -N poisson
 
 # Allocate two nodes with 12 processors from the default resources
-#PBS -lnodes=2:ppn=12:default
+#PBS -lnodes=1:ppn=1:default
 
-# Expect to run up to 5 minutes
-#PBS -lwalltime=00:05:00
+# Expect to run up to 15 minutes
+#PBS -lwalltime=00:15:00
 
 # Memory per process
 #PBS -lpmem=2000MB
@@ -21,6 +21,8 @@
 # Join stdout and stderr output to one file
 #PBS -j oe
 
+#PBS -o output
+
 # Change directory to dir with the job script
 cd ${PBS_O_WORKDIR}
 
@@ -32,4 +34,4 @@ module load openmpi/1.4.3-intel
 KMP_AFFINITY="granularity=fine,compact"
 
 # Run with 8 MPI processes, each with 3 threads
-OMP_NUM_THREADS=3 mpirun -npernode 4 ./parallel 16384
+OMP_NUM_THREADS=1 mpirun -npernode 1 ./parallel 16384
