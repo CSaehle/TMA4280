@@ -148,6 +148,13 @@ main(int argc, char **argv)
     printf (" umax = %e \n", global_max);
   }
  end:
+  free(diag);
+  free(b[0]);
+  free(b);
+  free(bt[0]);
+  free(bt);
+  free(z[0]);
+  free(z);
   MPI_Finalize();
 }
 
