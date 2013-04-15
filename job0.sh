@@ -21,7 +21,7 @@
 # Join stdout and stderr output to one file
 #PBS -j oe
 
-#PBS -o output/o.$PBS_O_JOBID
+#PBS -o output
 
 # Change directory to dir with the job script
 cd ${PBS_O_WORKDIR}
