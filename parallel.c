@@ -35,7 +35,7 @@ int mpi_size, mpi_rank, mpi_work;
 int omp_tot_threads;
 int n, m, nn;
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   double wall_start = MPI_Wtime();
   Real *diag, **b, **bt, **z;
@@ -57,7 +57,7 @@ main(int argc, char **argv)
       printf("need a problem size\n");
     }
     MPI_Finalize();
-    return;
+    return 0;
   }
 
   n  = atoi(argv[1]);
