@@ -45,7 +45,7 @@ main(int argc, char **argv)
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-  omp_tot_threads = 1; //omp_get_num_threads();
+  omp_tot_threads = omp_get_num_threads();
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
@@ -79,7 +79,7 @@ main(int argc, char **argv)
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
 
-  #pragma omp parallel for
+  #pragma omp parallel for private(i)
   for (j=0; j < mpi_work; j++) { // MPI
     for (i=0; j + mpi_work * mpi_rank < m && i < m; i++) { // OMP
       b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
@@ -88,7 +88,7 @@ main(int argc, char **argv)
 
   #pragma omp parallel for private(omp_id)
   for (j=0; j < mpi_work; j++) { // MPI cut + OMP
-    omp_id = 0 ; //omp_get_thread_num();
+    omp_id = omp_get_thread_num();
     fst_(b[j], &n, z[omp_id], &nn); // må ha mange forskjellige z arrays, ellers bang.
   }
 
@@ -96,11 +96,11 @@ main(int argc, char **argv)
 
   #pragma omp parallel for private(omp_id)
   for (i=0; i < mpi_work; i++) { // MPI cut + OMP
-    omp_id = 0 ; //omp_get_thread_num();
+    omp_id = omp_get_thread_num();
     fstinv_(bt[i], &n, z[omp_id], &nn);
   }
 
-  #pragma omp parallel for
+  #pragma omp parallel for private(i)
   for (j=0; j < mpi_work; j++) { // MPI
     for (i=0; i < m; i++) {
       bt[j][i] = bt[j][i]/(diag[i]+diag[j + mpi_work * mpi_rank]);
@@ -109,7 +109,7 @@ main(int argc, char **argv)
 
   #pragma omp parallel for private(omp_id)
   for (i=0; i < mpi_work; i++) { // MPI cut + OMP
-    omp_id = 0 ; //omp_get_thread_num();
+    omp_id = omp_get_thread_num();
     fst_(bt[i], &n, z[omp_id], &nn);
   }
 

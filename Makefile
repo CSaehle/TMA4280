@@ -4,7 +4,7 @@ test: parallel
 	./test.sh
 
 parallel: fst.o parallel.c
-	mpicc -o parallel parallel.c fst.o -lm
+	mpicc -fopenmp -o parallel parallel.c fst.o -lm
 
 serial: fst.o poisson.c
 	gcc -o serial poisson.c fst.o -lm
