@@ -14,6 +14,7 @@
 #include <memory.h>
 #include <math.h>
 #include <mpi.h>
+#include <omp.h>
 
 typedef double Real;
 
@@ -31,17 +32,20 @@ void fstinv_(Real *v, int *n, Real *w, int *nn);
   } while (0)
 
 int mpi_size, mpi_rank, mpi_work;
+int omp_tot_threads;
 int n, m, nn;
 
 main(int argc, char **argv)
 {
-  Real *diag, **b, **bt, *z;
+  Real *diag, **b, **bt, **z;
   Real pi, h, omp_local_max, local_max, global_max;
-  int i, j;
+  int i, j, omp_id;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
+  omp_tot_threads = 1; //omp_get_num_threads();
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
@@ -65,7 +69,7 @@ main(int argc, char **argv)
   diag = createRealArray (m);
   b    = createReal2DArray (mpi_work, mpi_size*mpi_work);
   bt   = createReal2DArray (mpi_work, mpi_size*mpi_work);
-  z    = createRealArray (nn);
+  z    = createReal2DArray (omp_tot_threads, nn);
 
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
@@ -76,22 +80,24 @@ main(int argc, char **argv)
   }
 
   #pragma omp parallel for
-  for (j=0; j < mpi_work && j + mpi_work * mpi_rank < m; j++) { // MPI
-    for (i=0; i < m; i++) { // OMP
+  for (j=0; j < mpi_work; j++) { // MPI
+    for (i=0; j + mpi_work * mpi_rank < m && i < m; i++) { // OMP
       b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
     }
   }
 
-  #pragma omp parallel for
+  #pragma omp parallel for private(omp_id)
   for (j=0; j < mpi_work; j++) { // MPI cut + OMP
-    fst_(b[j], &n, z, &nn); // må ha mange forskjellige z arrays, ellers bang.
+    omp_id = 0 ; //omp_get_thread_num();
+    fst_(b[j], &n, z[omp_id], &nn); // må ha mange forskjellige z arrays, ellers bang.
   }
 
   transpose (bt,b);
 
-  #pragma omp parallel for
+  #pragma omp parallel for private(omp_id)
   for (i=0; i < mpi_work; i++) { // MPI cut + OMP
-    fstinv_(bt[i], &n, z, &nn);
+    omp_id = 0 ; //omp_get_thread_num();
+    fstinv_(bt[i], &n, z[omp_id], &nn);
   }
 
   #pragma omp parallel for
@@ -101,16 +107,17 @@ main(int argc, char **argv)
     }
   }
 
-  #pragma omp parallel for
+  #pragma omp parallel for private(omp_id)
   for (i=0; i < mpi_work; i++) { // MPI cut + OMP
-    fst_(bt[i], &n, z, &nn);
+    omp_id = 0 ; //omp_get_thread_num();
+    fst_(bt[i], &n, z[omp_id], &nn);
   }
 
   transpose (b,bt);
 
-  #pragma omp parallel for
+  #pragma omp parallel for private(omp_id)
   for (j=0; j < mpi_work; j++) { // MPI cut + OMP
-    fstinv_(b[j], &n, z, &nn);
+    fstinv_(b[j], &n, z[omp_id], &nn);
   }
 
   local_max = 0.0;
@@ -120,8 +127,8 @@ main(int argc, char **argv)
   {
     // MPI, work in range (and handle last node overflow)
     #pragma omp for nowait
-    for (j=0; j < mpi_work && j + mpi_work * mpi_rank < m; j++) {
-      for (i=0; i < m; i++) {
+    for (j=0; j < mpi_work; j++) {
+      for (i=0; j + mpi_work * mpi_rank < m && i < m; i++) {
         if (b[j][i] > omp_local_max) omp_local_max = b[j][i];
       }
     }
