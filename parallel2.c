@@ -84,7 +84,8 @@ int main(int argc, char **argv)
   #pragma omp parallel for private(j, i)
   for (j=0; j < mpi_work; j++) { // MPI
     for (i=0; j + mpi_work * mpi_rank < m && i < m; i++) { // OMP
-      b[j][i] = h*h;
+      int k = j + mpi_work * mpi_rank;
+      b[j][i] = exp((Real) k) * sin(2.0 * pi * k) * sin(2.0 * i);
     }
   }
 
