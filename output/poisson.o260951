@@ -1,0 +1,4 @@
+Warning: Permanently added 'compute-0-7' (RSA) to the list of known hosts.
+Warning: Permanently added 'compute-1-9' (RSA) to the list of known hosts.
+ umax = 7.367135e-02, time = 48.886s 
+ mpi_size = 8, omp_max_threads = 3
