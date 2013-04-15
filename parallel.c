@@ -46,6 +46,10 @@ main(int argc, char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
   omp_tot_threads = omp_get_num_threads();
+  
+  printf("num=%d, id=%d\n", omp_tot_threads, omp_get_thread_num());
+  
+  goto end;
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
@@ -69,45 +73,45 @@ main(int argc, char **argv)
   diag = createRealArray (m);
   b    = createReal2DArray (mpi_work, mpi_size*mpi_work);
   bt   = createReal2DArray (mpi_work, mpi_size*mpi_work);
-  z    = createReal2DArray (omp_tot_threads, nn);
+  z    = createReal2DArray (omp_tot_threads+ 10, nn);
 
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
-
-  #pragma omp parallel for
+  
+  #pragma omp parallel for private(i)
   for (i=0; i < m; i++) { // Everyone generate this one
     diag[i] = 2.*(1.-cos((i+1)*pi/(Real)n));
   }
 
-  #pragma omp parallel for private(i)
+  #pragma omp parallel for private(j, i)
   for (j=0; j < mpi_work; j++) { // MPI
     for (i=0; j + mpi_work * mpi_rank < m && i < m; i++) { // OMP
       b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
     }
   }
 
-  #pragma omp parallel for private(omp_id)
+  #pragma omp parallel for private(omp_id, i)
   for (j=0; j < mpi_work; j++) { // MPI cut + OMP
     omp_id = omp_get_thread_num();
     fst_(b[j], &n, z[omp_id], &nn); // må ha mange forskjellige z arrays, ellers bang.
   }
-
+  
   transpose (bt,b);
 
-  #pragma omp parallel for private(omp_id)
+  #pragma omp parallel for private(i, omp_id) schedule(static)
   for (i=0; i < mpi_work; i++) { // MPI cut + OMP
     omp_id = omp_get_thread_num();
     fstinv_(bt[i], &n, z[omp_id], &nn);
   }
 
-  #pragma omp parallel for private(i)
+  #pragma omp parallel for private(j, i)
   for (j=0; j < mpi_work; j++) { // MPI
     for (i=0; i < m; i++) {
       bt[j][i] = bt[j][i]/(diag[i]+diag[j + mpi_work * mpi_rank]);
     }
   }
 
-  #pragma omp parallel for private(omp_id)
+  #pragma omp parallel for private(i, omp_id) schedule(static)
   for (i=0; i < mpi_work; i++) { // MPI cut + OMP
     omp_id = omp_get_thread_num();
     fst_(bt[i], &n, z[omp_id], &nn);
@@ -115,7 +119,7 @@ main(int argc, char **argv)
 
   transpose (b,bt);
 
-  #pragma omp parallel for private(omp_id)
+  #pragma omp parallel for private(j, omp_id)
   for (j=0; j < mpi_work; j++) { // MPI cut + OMP
     fstinv_(b[j], &n, z[omp_id], &nn);
   }
@@ -123,7 +127,7 @@ main(int argc, char **argv)
   local_max = 0.0;
   omp_local_max = 0.0;
 
-  #pragma omp parallel shared(local_max) private(i) firstprivate(omp_local_max)
+  #pragma omp parallel shared(local_max) private(j,i) firstprivate(omp_local_max)
   {
     // MPI, work in range (and handle last node overflow)
     #pragma omp for nowait

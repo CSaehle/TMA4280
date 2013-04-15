@@ -4,13 +4,13 @@ test: parallel
 	./test.sh
 
 parallel: fst.o parallel.c
-	mpicc -fopenmp -o parallel parallel.c fst.o -lm
+	mpicc -fopenmp -o parallel parallel.c fst.o -g -lm
 
 serial: fst.o poisson.c
 	gcc -o serial poisson.c fst.o -lm
 
 fst.o: fst.f
-	gfortran -o fst.o -c fst.f
+	gfortran -o fst.o -c fst.f -g
 
 clean:
 	rm -rf tmp serial parallel fst.o
