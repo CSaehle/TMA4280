@@ -7,7 +7,7 @@ parallel: fst.o parallel.c
 	mpicc -fopenmp -o parallel parallel.c fst.o -g -lm
 
 parallel2: fst.o parallel2.c
-	mpicc -fopenmp -o parallel parallel.c fst.o -g -lm
+	mpicc -fopenmp -o parallel2 parallel2.c fst.o -g -lm
 
 serial: fst.o poisson.c
 	gcc -o serial poisson.c fst.o -lm
