@@ -1,0 +1,4 @@
+module load intel/compilers/11.1.059
+module load openmpi/1.4.3
+ifort -c fst.f -o fst.o
+mpicc -openmp -o parallel parallel.c fst.o -g -lm

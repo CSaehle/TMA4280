@@ -3,11 +3,6 @@ all: serial parallel
 test: parallel
 	./test.sh
 
-kongullparallel:
-	module load intel/compilers/11.1.059
-	module load openmpi/1.4.3
-	mpicc -openmp -o parallel parallel.c fst.o -g -lm
-
 parallel: fst.o parallel.c
 	mpicc -fopenmp -o parallel parallel.c fst.o -g -lm
 
