@@ -32,4 +32,79 @@ where $\underline A$ represents the discrete Laplace operator, $\underline u$ is
 a vector representing the unknowns, and $\underline f$ is a known right hand
 side vector.
 
+Now, let $\underline T = \underline A$, and let $\underline U$ be a matrix with
+the same size as $\underline T$. By expressing the partial derivatives of both
+$x$ and $y$ with $\underline T$ and $\underline U$, we can solve this problem as
+a system of equation. Thus, let
 
+\begin{align}
+  \cfrac{1}{h^2}(\underline{TU})i,j \simeq& -(\cfrac{\partial^2u}{\partial x^2})i,j \\
+  \cfrac{1}{h^2}(\underline{UT})i,j \simeq& -(\cfrac{\partial^2u}{\partial y^2})i,j
+\end{align}
+
+and express Equation 1 through $\underline T$ and $\underline U$ as follows:
+
+\begin{equation}
+  (\underline{TU} + \underline{UT})i,j = h^2f_{i,j} = \underline{G}
+\end{equation}
+
+Henceforth, our goal is now to solve
+
+\begin{equation}
+  \underline{TU} + \underline{UT} = \underline G
+\end{equation}
+
+where $\underline T$, $\underline U$, $\underline G \in \mathbb{M}_{M\times M}$.
+
+\subsection{Diagonalization}
+
+We thus have to find the eigenvalues and the orthonormal eigenvectors to
+$\underline T$ and place them into $\underline Q$, an orthonormal matrix. As
+$\underline Q$ represent all the orthonormal eigenvectors, we have that
+
+\begin{equation}
+  \underline T = \underline Q \underline \Lambda \underline Q^T
+\end{equation}
+where $\underline \Lambda$ is the diagonal matrix with all the eigenvalues to
+$\underline T$.
+
+By combining Equation 8 and 9, we get
+\begin{align}
+  \underline {Q \Lambda Q^T U} + \underline {U Q \Lambda Q^T} &= \underline G \\
+  \underline {\Lambda Q^T U Q} + \underline {Q^T U Q \Lambda} &= \underline{Q^T
+    G Q} \\
+  \underline {\Lambda \tilde{U}} + \underline {\tilde{U} \Lambda} &= \underline{\tilde{G}}
+\end{align}
+
+where
+\begin{equation}
+  \underline U = \underline{Q^T \tilde{U} Q}
+\end{equation}
+
+Out from this, we can now start on different method solving this issue.
+
+\subsection{Methods}
+
+The first we need to do, is to compute $\underline{\tilde{G}} = \underline Q^T
+(h^2 \underline F) \underline Q$, which is essentially two matrix
+multiplications as all these variables can be found. This will take
+$\mathcal{O}(n^3)$ operations\footnote{Or $n^{\log_2 1 + o(1)}$, when using
+  the Strassen algorithm.}.
+
+The next we need to find is $\underline{\tilde{U}}$. From Equation 12, this is
+trivial:
+
+\begin{align*}
+  \underline {\Lambda \tilde{U}} + \underline {\tilde{U} \Lambda} &=
+  \underline{\tilde{G}}\\
+  \lambda_i\tilde{u}_{i,j} + \lambda_j\tilde{u}_{i,j} &= \tilde{g}_{i,j} \\
+  (\lambda_i + \lambda_j)\tilde{u}_{i,j} &= \tilde{g}_{i,j} \\
+  \tilde{u}_{i,j} &= \cfrac{\tilde{g}_{i,j}}{\lambda_i + \lambda_j}
+\end{align*}
+
+It then follows that finding $\underline{\tilde{U}}$ can be done in
+$\mathcal{O}(n^2)$ time.
+
+Finding the original $\underline U$ is trivial by using Equation 13, which uses
+$\mathcal{O}(n^3)$ time. When this calculation is done, we have thus solved the
+Poisson problem.
