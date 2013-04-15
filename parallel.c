@@ -159,6 +159,7 @@ int main(int argc, char **argv)
 
   if (mpi_rank == 0) {
     printf (" umax = %e, time = %.3fs \n", global_max,wall_end-wall_start);
+    printf(" mpi_size = %d, omp_max_threads = %d\n", mpi_size, omp_tot_threads);
   }
 }
 
