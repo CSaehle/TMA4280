@@ -8,10 +8,11 @@
 
 MPI_Datatype send_t, recv_t;
 
-#define ROWS 5
-#define COLS 5
+#define ROWS 3
+#define COLS 3
 #define NODES 2
-#define RPN 3
+#define RPN 2
+#define PRINT_NODE 1
 // Rows per node
 
 void prn(int *a, int size);
@@ -50,11 +51,14 @@ main(int argc, char **argv )
 
   for (i = 0; i < RPN; i++) {
     for (j = 0; j < COLS; j++) {
-      send[i][j] = i*COLS + j  + RPN*COLS* mpi_rank;
+      int size = i*COLS + j  + RPN*COLS* mpi_rank;
+      if (size < ROWS*COLS) {
+        send[i][j] = size + 1;
+      }
     }
   }
 
-  if (mpi_rank == 1) {
+  if (mpi_rank == PRINT_NODE) {
     for (i = 0; i < RPN; i++) {
       prn(send[i], RPN*RPN);
     }
@@ -64,7 +68,7 @@ main(int argc, char **argv )
   for (i = 0; i < RPN; i++) {
     MPI_Alltoall(send[i], RPN, MPI_INT, recv[i], RPN, MPI_INT, MPI_COMM_WORLD);
   }
-  if (mpi_rank == 1) {
+  if (mpi_rank == PRINT_NODE) {
     for (i = 0; i < RPN; i++) {
       prn(recv[i], RPN*RPN);
     }
@@ -74,7 +78,7 @@ main(int argc, char **argv )
     local_transpose(recv, RPN, i*RPN);
   }
 
-  if (mpi_rank == 1) {
+  if (mpi_rank == PRINT_NODE) {
     for (i = 0; i < RPN; i++) {
       prn(recv[i], RPN*RPN);
     }
@@ -87,7 +91,7 @@ main(int argc, char **argv )
     local_transpose(send, RPN, i*RPN);
   }
 
-  if (mpi_rank == 1) {
+  if (mpi_rank == PRINT_NODE) {
     for (i = 0; i < RPN; i++) {
       prn(send[i], RPN*RPN);
     }
