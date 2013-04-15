@@ -11,5 +11,25 @@ operator. {\em u} and {\em f} are both real- or complex-valued functions on a
 manifold, in our case the Euclidian space.
 
 We discretize this problem on a uniform, finite, difference grid with a mesh
-spacing $h = 1/n$.
+spacing $h = 1/n$. To obtain the second derivative, one approximate $u$ by using
+the 5-point stencil. The problem can thus be expressed as
+
+\begin{equation}
+  -\cfrac{u_{i+1, j} + u_{i, j+1} +u_{i-1, j} +u_{i, j-1} - 4u_{i, j}}{h^2} =
+  f_{i,j}
+\end{equation}
+
+where $f_{i,j} = f(x_i, y_j)$ and $u_{i,j} \approx u(x_i, y_j)$, the
+approximation.
+
+Now, our problem is reduced to find a solution to
+
+\begin{equation}
+  \underline A \underline u = \underline f
+\end{equation}
+
+where $\underline A$ represents the discrete Laplace operator, $\underline u$ is
+a vector representing the unknowns, and $\underline f$ is a known right hand
+side vector.
+
 
