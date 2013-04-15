@@ -1,0 +1,7 @@
+Warning: Permanently added 'compute-0-15' (RSA) to the list of known hosts.
+chown: cannot access `/state/partition1/scratch/pbstmp.260995.rocks.hpc.ntnu.no': No such file or directory
+Warning: Permanently added 'compute-0-16' (RSA) to the list of known hosts.
+chown: cannot access `/state/partition1/scratch/pbstmp.260995.rocks.hpc.ntnu.no': No such file or directory
+Warning: Permanently added 'compute-0-17' (RSA) to the list of known hosts.
+ umax = 7.367135e-02, time = 46.248s 
+ mpi_size = 3, omp_max_threads = 12, n = 16384
