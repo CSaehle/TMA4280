@@ -17,7 +17,7 @@ MPI_Datatype send_t, recv_t;
 void prn(int *a, int size);
 int **create2DArray(int rows, int cols);
 
-void transpose (int **b, int rpn, int off) {
+void local_transpose (int **b, int rpn, int off) {
   int i, j, temp;
   for (j=0; j < rpn; j++) {
     for (i=j+1; i < rpn; i++) {
@@ -31,7 +31,7 @@ void transpose (int **b, int rpn, int off) {
 main(int argc, char **argv )
 {
   int mpi_size, mpi_rank, mpi_work;
-  
+
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -42,8 +42,8 @@ main(int argc, char **argv )
     }
     goto end;
   }
-  
-  
+
+
   int **send = create2DArray(RPN, RPN*RPN);
   int **recv = create2DArray(RPN, RPN*RPN);
   int i, j;
@@ -71,9 +71,9 @@ main(int argc, char **argv )
     printf("\n");
   }
   for (i = 0; i < RPN; i++) {
-    transpose(recv, RPN, i*RPN);    
+    local_transpose(recv, RPN, i*RPN);
   }
-  
+
   if (mpi_rank == 1) {
     for (i = 0; i < RPN; i++) {
       prn(recv[i], RPN*RPN);
@@ -84,9 +84,9 @@ main(int argc, char **argv )
     MPI_Alltoall(recv[i], RPN, MPI_INT, send[i], RPN, MPI_INT, MPI_COMM_WORLD);
   }
   for (i = 0; i < RPN; i++) {
-    transpose(send, RPN, i*RPN);    
+    local_transpose(send, RPN, i*RPN);
   }
-  
+
   if (mpi_rank == 1) {
     for (i = 0; i < RPN; i++) {
       prn(send[i], RPN*RPN);

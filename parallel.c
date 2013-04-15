@@ -56,8 +56,8 @@ main(int argc, char **argv)
   nn = 4*n;
 
   diag = createRealArray (m);
-  b    = createReal2DArray (m,m);
-  bt   = createReal2DArray (m,m);
+  b    = createReal2DArray (mpi_work, mpi_work*mpi_work);
+  bt   = createReal2DArray (mpi_work, mpi_work*mpi_work);
   z    = createRealArray (nn);
 
   h    = 1./(Real)n;
@@ -69,51 +69,51 @@ main(int argc, char **argv)
   }
 
   #pragma omp parallel for
-  for (j=0; j < m; j++) { // MPI
-    for (i=0; i < m; i++) { // OMP
+  for (j=0; j < mpi_work; j++) { // MPI
+    for (i=0; i < mpi_work*mpi_work; i++) { // OMP
       b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
     }
   }
 
   #pragma omp parallel for
-  for (j=0; j < m; j++) { // MPI cut + OMP
+  for (j=0; j < mpi_work; j++) { // MPI cut + OMP
     fst_(b[j], &n, z, &nn);
   }
 
-  transpose (bt,b,m);
+  transpose (bt,b,mpi_work);
 
   #pragma omp parallel for
-  for (i=0; i < m; i++) { // MPI cut + OMP
+  for (i=0; i < mpi_work; i++) { // MPI cut + OMP
     fstinv_(bt[i], &n, z, &nn);
   }
 
   #pragma omp parallel for
-  for (j=0; j < m; j++) { // MPI
-    for (i=0; i < m; i++) {
+  for (j=0; j < mpi_work; j++) { // MPI
+    for (i=0; i < mpi_work*mpi_work; i++) {
       bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
     }
   }
 
   #pragma omp parallel for
-  for (i=0; i < m; i++) { // MPI cut + OMP
+  for (i=0; i < mpi_work; i++) { // MPI cut + OMP
     fst_(bt[i], &n, z, &nn);
   }
 
-  transpose (b,bt,m);
+  transpose (b,bt,mpi_work);
 
   #pragma omp parallel for
-  for (j=0; j < m; j++) { // MPI cut + OMP
+  for (j=0; j < mpi_work; j++) { // MPI cut + OMP
     fstinv_(b[j], &n, z, &nn);
   }
 
   local_max = 0.0;
   omp_local_max = 0.0;
 
-  #pragma omp parallel shared(local_max) private(i)  firstprivate(omp_local_max)
+  #pragma omp parallel shared(local_max) private(i) firstprivate(omp_local_max)
   {
     // MPI, work in range (and handle last node overflow)
     #pragma omp for nowait
-    for (j=mpi_rank * mpi_work; j < (mpi_rank + 1) * mpi_work && j < m; j++) {
+    for (j=0; j < mpi_work; j++) {
       for (i=0; i < m; i++) {
         if (b[j][i] > local_max) local_max = b[j][i];
       }
@@ -136,13 +136,26 @@ main(int argc, char **argv)
   MPI_Finalize();
 }
 
-void transpose (Real **bt, Real **b, int m)
-{
-  int i, j;
-  for (j=0; j < m; j++) {
-    for (i=0; i < m; i++) {
-      bt[j][i] = b[i][j];
+void local_transpose (Real **b, int rpn, int off) {
+  int i, j, temp;
+  for (j=0; j < rpn; j++) {
+    for (i=j+1; i < rpn; i++) {
+      temp = b[j][i+off];
+      b[j][i+off] = b[i][j+off];
+      b[i][j+off] = temp;
     }
+  }
+}
+
+void transpose (Real **recv, Real **send, int mpi_work)
+{
+  int i;
+  for (i = 0; i < mpi_work; i++) {
+    MPI_Alltoall(send[i], mpi_work, MPI_INT,
+                 recv[i], mpi_work, MPI_INT, MPI_COMM_WORLD);
+  }
+  for (i = 0; i < mpi_work; i++) {
+    local_transpose(recv, mpi_work, i*mpi_work);
   }
 }
 
