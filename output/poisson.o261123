@@ -1,0 +1,4 @@
+chown: cannot access `/state/partition1/scratch/pbstmp.261123.rocks.hpc.ntnu.no': No such file or directory
+chown: cannot access `/state/partition1/scratch/pbstmp.261123.rocks.hpc.ntnu.no': No such file or directory
+ umax = 7.367135e-02, time = 2.846s 
+ mpi_size = 18, omp_max_threads = 2, n = 4096

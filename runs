@@ -1,0 +1,10 @@
+	n = 2**14 = 
+nodes = 1, npernode = 1, threads = 12, totproc = 1
+nodes = 1, npernode = 6, threads = 2, totproc = 6
+nodes = 3, npernode = 6, threads = 2, totproc = 18
+nodes = 3, npernode = 12, threads = 1, totproc = 36
+	n = 2**12 = 4096
+nodes = 3, npernode = 12, threads = 1, totproc = 36
+nodes = 3, npernode = 6, threads = 2, totproc = 18
+nodes = 1, npernode = 6, threads = 2, totproc = 6, 
+nodes = 1, npernode = 1, threads = 12, totproc = 1,
