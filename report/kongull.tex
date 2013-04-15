@@ -1,0 +1,7 @@
+\section{Methodology}
+Our solution to this assignment has been tested on the Kongull cluster, a local computer cluster at NTNU. A computer cluster is a network of connected computers used as one for high performance parallel computing, which allows us to test various parallellisations for speed-up and efficiency.
+
+We compiled our programs with a custom script, \emph{makekongull}, that uses IFORT, Intel's Fortran compiler, to compile the Fortran code given to object code, and Intel's C compiler (wrapped in MPICC) to compile our code and link the two together.
+
+\subsection{Kongull hardware}
+The Kongull cluster is a CentOS 5.3 Linux cluster running Rocks on HP servers with AMD processors. The cluster has 98x 12-way nodes, with 1 login, 4 I/O and 93 compute nodes. Each node is equipped with 2x 6-core 2.4 GHz AMD Opteron 2431 (Istanbul) processors, with 6x 512KiB L1 cache and a common 6 MiB L3-cache. Istanbul supports the MMX, SSE, SSE2, SSE3, SSE4a, Enhanced 3DNow!, NX bit, AMD64, AMD-V (SVN \& Rapid Virtualization Indexing) and HT-Assist extensions.\footnote{Information taken verbatim from the High Performance Computing group's website, https://www.hpc.ntnu.no/display/hpc/Kongull+Hardware, visited 2013.04.15}
