@@ -11,6 +11,7 @@
 
 \usepackage{comment}
 \usepackage{tabularx}
+\usepackage{listings}
 
 \setlength{\parskip}{\bigskipamount}
 \setlength{\parindent}{0pt}
@@ -34,6 +35,7 @@ Norwegian University of Science and Technology
 \date{\today}
 
 \begin{document}
+\lstset{language=C, frame=single}
 
 \maketitle
 \thispagestyle{empty}
@@ -42,5 +44,6 @@ Norwegian University of Science and Technology
 
 \input{intro}
 \input{poisson}
+\input{impl}
 
 \end{document}
