@@ -61,8 +61,8 @@ main(int argc, char **argv)
   nn = 4*n;
 
   diag = createRealArray (m);
-  b    = createReal2DArray (mpi_work, mpi_work*mpi_work);
-  bt   = createReal2DArray (mpi_work, mpi_work*mpi_work);
+  b    = createReal2DArray (mpi_work, mpi_work*mpi_size);
+  bt   = createReal2DArray (mpi_work, mpi_work*mpi_size);
   z    = createRealArray (nn);
 
   h    = 1./(Real)n;
@@ -75,7 +75,7 @@ main(int argc, char **argv)
 
   #pragma omp parallel for
   for (j=0; j < mpi_work; j++) { // MPI
-    for (i=0; i < mpi_work*mpi_work; i++) { // OMP
+    for (i=0; i < m; i++) { // OMP
       b[j][i] = h*h; // Or should this be calculated on node 0 and distributed?
     }
   }
@@ -92,9 +92,9 @@ main(int argc, char **argv)
     fstinv_(bt[i], &n, z, &nn);
   }
 
-  #pragma omp parallel for
+#pragma omp parallel for
   for (j=0; j < mpi_work; j++) { // MPI
-    for (i=0; i < mpi_work*mpi_work; i++) {
+    for (i=0; i < m; i++) {
       bt[j][i] = bt[j][i]/(diag[i]+diag[j]);
     }
   }
