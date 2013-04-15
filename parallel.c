@@ -45,11 +45,7 @@ main(int argc, char **argv)
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-  omp_tot_threads = omp_get_num_threads();
-  
-  printf("num=%d, id=%d\n", omp_tot_threads, omp_get_thread_num());
-  
-  goto end;
+  omp_tot_threads = omp_get_max_threads();
 
   /* the total number of grid points in each spatial direction is (n+1) */
   /* the total number of degrees-of-freedom in each spatial direction is (n-1) */
@@ -73,7 +69,7 @@ main(int argc, char **argv)
   diag = createRealArray (m);
   b    = createReal2DArray (mpi_work, mpi_size*mpi_work);
   bt   = createReal2DArray (mpi_work, mpi_size*mpi_work);
-  z    = createReal2DArray (omp_tot_threads+ 10, nn);
+  z    = createReal2DArray (omp_tot_threads, nn);
 
   h    = 1./(Real)n;
   pi   = 4.*atan(1.);
@@ -121,6 +117,7 @@ main(int argc, char **argv)
 
   #pragma omp parallel for private(j, omp_id)
   for (j=0; j < mpi_work; j++) { // MPI cut + OMP
+    omp_id = omp_get_thread_num();
     fstinv_(b[j], &n, z[omp_id], &nn);
   }
 
