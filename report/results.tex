@@ -1,5 +1,25 @@
 \section{Results}
 
+\subsection{Comparing hybrid and pure distributed memory models}
+
+Looking at the bottom four rows of tables \ref{table1} and \ref{table2}, we can observe that the pure distributed memory models (i.e. those with only one thread per process) are slightly better than the heavily hybrid models with large amounts of shared memory. This is not clear for the smaller dataset, as the results are quite similar, but the larger dataset shows clear benefits of using less shared memory, using a more pure distributed memory solution. The pure model is slightly faster, and slightly more efficient, and shows greater speedup. The reason for this may be that the local_transpose function is performed in parallel when using the distributed memory model. The shared memory model performs this serially.
+
+\begin{table}[h]
+   \centering
+    \begin{tabular}{| l | l | l | l | l | l | l |}
+    \hline
+    \bf{n} & \bf{Nodes} & \bf{Processes} &\bf{Threads} & \bf{Average time} & \bf{Average }$S_{p}$ & \bf{Efficiency} \\ \hline
+	4096 & 1 & 1 & 1 & 42.65s & 1 & 1 \\ \hline
+	4096 & 1 & 1 & 12 & 5.49s & 7.77 & 0.65  \\ \hline	
+	4096 & 1 & 6 & 2 & 4.80s & 8.89 & 0.74 \\ \hline
+	4096 & 3 & 3 & 12 & 3.39s & 12.58 & 0.35 \\ \hline
+	4096 & 3 & 12 & 3 & 2.90s & 14.71 & 0.41 \\ \hline
+	4096 & 3 & 18 & 2 & 2.84s & 15.02 & 0.42 \\ \hline	
+	4096 & 3 & 36 & 1 & 2.93s & 14.56 & 0.40 \\ \hline
+    \end{tabular}
+	\label{table1}
+\end{table}
+
 \begin{table}[h]
    \centering
     \begin{tabular}{| l | l | l | l | l | l | l |}
@@ -13,17 +33,10 @@
 	16384 & 3 & 18 & 2 & 32.75s & 24.08 & 0.67 \\ \hline	
 	16384 & 3 & 36 & 1 & 31.11s & 25.35 & 0.70  \\ \hline
     \end{tabular}
+	\label{table2}
 \end{table}
 
-\begin{table}[h]
-   \centering
-    \begin{tabular}{| l | l | l | l | l | l | l |}
-    \hline
-    \bf{n} & \bf{Nodes} & \bf{Processes} &\bf{Threads} & \bf{Average time} & \bf{Average }$S_{p}$ & \bf{Efficiency} \\ \hline
-	4096 & 1 & 1 & 1 & 42.65s & 1 & 1 \\ \hline
-	4096 & 1 & 1 & 12 & 5.49s & 7.77 & 0.65  \\ \hline	
-	4096 & 1 & 6 & 2 & 4.80s & 8.89 & 0.74 \\ \hline
-	4096 & 3 & 18 & 2 & 2.84s & 15.02 & 0.42 \\ \hline	
-	4096 & 3 & 36 & 1 & 2.93s & 14.56 & 0.40 \\ \hline
-    \end{tabular}
-\end{table}
+
+
+\subsection{Timing and speedup}
+When comparing two runs, one with a dataset 16 times the size of the other, we would expect to see roughly a 16-fold increase in time spent computing. Our linear computation is 18.49 times faster for the smaller dataset. However, when computing on an increasingly greater number of processors, this effect is noticeably reduced, as a larger dataset improves efficiency. This is as expected, because for a larger dataset, a relatively smaller amount of the program is non-parallellisable. The results using various configurations and datasets of n = 4096 and n = 16384 respectively can be found in tables \ref{table1} and \ref{table2}
