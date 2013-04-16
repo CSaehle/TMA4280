@@ -4,10 +4,13 @@
 
 We implemented two variations on the parallel program, using a different $f$ on
 the right hand side of the Poisson equation. First, we changed the equation to
-the smooth function, $f(x, y) = e^x \cdot sin ( 2 \pi x) \cdot sin (\pi y)$.
+the smooth function, $f(x, y) = e^x \cdot \sin ( 2 \pi x) \cdot \sin (\pi y)$.
 Secondly, we changed the equation to make f represent two point sources, $f = 0$
 in the whole domain except for $f(0, 0) = 1$ and $f(m-1, m-1) = -1$. The only
-modifications we needed to make to the program was the way $f$ was generated.
+modifications we needed was to generate $f$ differently.
+
+The smooth function lies within {\tt parallel2.c}, and the point source function
+lies within {\tt parallel3.c}
 
 \subsection{Supporting Non-zero Boundary Conditions}
 
@@ -17,7 +20,7 @@ Supporting non-zero boundary conditions would require us to change Equation 7 to
   (\underline{TU} + \underline{UT})i,j = h^2f_{i,j} + \underline U = \underline{G}
 \end{equation}
 
-
+However, what changes this would imply is not completely clear to us.
 
 \subsection{Generalizing to Rectangular Domains}
 Generalizing this implementation to rectangular domains has no effect on the
