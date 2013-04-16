@@ -2,9 +2,22 @@
 
 \subsection{Comparing hybrid and pure distributed memory models}
 
-Looking at the bottom four rows of tables \ref{table1} and \ref{table2}, we can observe that the pure distributed memory models (i.e. those with only one thread per process) are slightly better than the heavily hybrid models with large amounts of shared memory. This is not clear for the smaller dataset, as the results are quite similar, but the larger dataset shows clear benefits of using less shared memory, using a more pure distributed memory solution. The pure model is slightly faster, and slightly more efficient, and shows greater speedup. The reason for this may be that the local\_transpose function is performed in parallel when using the distributed memory model. The shared memory model performs this serially.
+Looking at the bottom four rows of Table \ref{table1} and 5.2, we can
+observe that the pure distributed memory models (i.e. those with only one thread
+per process) are slightly better than the heavily hybrid models with large
+amounts of shared memory. This is not clear for the smaller dataset, as the
+results are quite similar, but the larger dataset shows clear benefits of using
+less shared memory, using a more pure distributed memory solution. The pure
+model is slightly faster, and slightly more efficient, and shows greater
+speedup. The reason for this may be that the local\_transpose function is
+performed in parallel when using the distributed memory model. The shared memory
+model performs this serially.
 
-Another factor in the poor results of the hybrid memory model is that the mode of parallelisation inserts implicit barriers in the code. For every OpenMP parallelised loop, there is a barrier that waits for every thread to finish the loop. The only barriers in the MPI implementation are in the transposition and reduction functions, leaving the rest of the code to run completely in parallel.
+Another factor in the poor results of the hybrid memory model is that the mode
+of parallelisation inserts implicit barriers in the code. For every OpenMP
+parallelised loop, there is a barrier that waits for every thread to finish the
+loop. The only barriers in the MPI implementation are in the transposition and
+reduction functions, leaving the rest of the code to run completely in parallel.
 
 \begin{table}[h]
    \centering
@@ -20,6 +33,7 @@ Another factor in the poor results of the hybrid memory model is that the mode o
 	4096 & 3 & 36 & 1 & 2.93s & 14.56 & 0.40 \\ \hline
     \end{tabular}
 	\label{table1}
+  \caption{Results of different run configurations with $n = 4096$}
 \end{table}
 
 \begin{table}[h]
@@ -36,10 +50,17 @@ Another factor in the poor results of the hybrid memory model is that the mode o
 	16384 & 3 & 36 & 1 & 31.11s & 25.35 & 0.70  \\ \hline
     \end{tabular}
 	\label{table2}
+  \caption{Results of different run configurations with $n = 16384$}
 \end{table}
 
-
-
 \subsection{Timing and speedup}
-When comparing two runs, one with a dataset 16 times the size of the other, we would expect to see roughly a 16-fold increase in time spent computing. Our linear computation is 18.49 times faster for the smaller dataset. However, when computing on an increasingly greater number of processors, this effect is noticeably reduced, as a larger dataset improves efficiency. This is as expected, because for a larger dataset, a relatively smaller amount of the program is non-parallellisable. The results using various configurations and datasets of $n = 4096$ and $n = 16384$ respectively can be found in tables \ref{table1} and \ref{table2}.
+When comparing two runs, one with a dataset 16 times the size of the other, we
+would expect to see roughly a 16-fold increase in time spent computing. Our
+linear computation is 18.49 times faster for the smaller dataset. However, when
+computing on an increasingly greater number of processors, this effect is
+noticeably reduced, as a larger dataset improves efficiency. This is as
+expected, because for a larger dataset, a relatively smaller amount of the
+program is non-parallellisable. The results using various configurations and
+datasets of $n = 4096$ and $n = 16384$ respectively can be found in Table
+\ref{table1} and 5.2.
 
