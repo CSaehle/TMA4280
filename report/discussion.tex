@@ -1,5 +1,18 @@
 \section{Discussion}
 
-Diskturer: Vi bruker kun ene programmet med openmp og en tråd.
+\subsection{Supporting Non-zero Boundary Conditions}
 
-Diskus: alltoall vs alltoallv
+Supporting non-zero boundary conditions would require us to change Equation 7 to
+
+\begin{equation}
+  (\underline{TU} + \underline{UT})i,j = h^2f_{i,j} + \underline U = \underline{G}
+\end{equation}
+
+
+
+\subsection{Generalizing to Rectangular Domains}
+Generalizing this implementation to rectangular domains has no effect on the
+method. The only difference would thus be the grid. As such, the only difference
+in the implementation is that the transposing has to be explicit grid
+dimensions, and that one uses the rectangular width and rectangular height
+properly at correct positions.
